@@ -39,12 +39,11 @@ public class StudentDAO {
     }
 
     public boolean addStudent(Student s) throws SQLException {
-        String sql = "INSERT INTO baitap_clsv3lop (Masv, Hoten, Tuoi, Sdt) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO baitap_clsv3lop ( Hoten, Tuoi, Sdt) VALUES ( ?, ?, ?)";
         PreparedStatement ps = conn.prepareStatement(sql);
-        ps.setInt(1, s.getMasv());
-        ps.setString(2, s.getHoten());
-        ps.setInt(3, s.getTuoi());
-        ps.setString(4, s.getSdt());
+        ps.setString(1, s.getHoten());
+        ps.setInt(2, s.getTuoi());
+        ps.setString(3, s.getSdt());
         return ps.executeUpdate() > 0;
     }
 

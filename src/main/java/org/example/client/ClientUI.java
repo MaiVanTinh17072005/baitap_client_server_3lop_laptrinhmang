@@ -66,18 +66,16 @@ public class ClientUI extends JFrame {
     }
 
     private void addStudent() {
-        JTextField tfMa = new JTextField();
         JTextField tfTen = new JTextField();
         JTextField tfTuoi = new JTextField();
         JTextField tfSdt = new JTextField();
 
-        Object[] msg = {"Mã SV:", tfMa, "Họ tên:", tfTen, "Tuổi:", tfTuoi, "SĐT:", tfSdt};
+        Object[] msg = { "Họ tên:", tfTen, "Tuổi:", tfTuoi, "SĐT:", tfSdt};
         int opt = JOptionPane.showConfirmDialog(this, msg, "Thêm sinh viên", JOptionPane.OK_CANCEL_OPTION);
 
         if (opt == JOptionPane.OK_OPTION) {
             try {
                 Student s = new Student(
-                        Integer.parseInt(tfMa.getText()),
                         tfTen.getText(),
                         Integer.parseInt(tfTuoi.getText()),
                         tfSdt.getText()
