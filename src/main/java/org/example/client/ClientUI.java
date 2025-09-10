@@ -7,12 +7,12 @@ import org.example.server.Response;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.awt.event.*;
 import java.util.List;
 
 public class ClientUI extends JFrame {
     private JTable table;
     private DefaultTableModel model;
+    private ClientApp clientApp; // giữ kết nối lâu dài
 
     public ClientUI() {
         setTitle("Quản lý Sinh viên - Client");
@@ -41,6 +41,23 @@ public class ClientUI extends JFrame {
         add(scrollPane, BorderLayout.CENTER);
         add(panelBtn, BorderLayout.SOUTH);
 
+        // ======= Kết nối tới server =======
+        try {
+            clientApp = new ClientApp("localhost", 9999);
+
+            // Lắng nghe realtime từ server
+            clientApp.startListening(res -> {
+                if (res.getData() instanceof List) {
+                    List<Student> list = (List<Student>) res.getData();
+                    SwingUtilities.invokeLater(() -> updateTable(list));
+                }
+            });
+
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Không kết nối được server: " + e.getMessage());
+            System.exit(0);
+        }
+
         // ======= Event =======
         btnLoad.addActionListener(e -> loadStudents());
         btnAdd.addActionListener(e -> addStudent());
@@ -51,15 +68,17 @@ public class ClientUI extends JFrame {
         loadStudents();
     }
 
+    private void updateTable(List<Student> list) {
+        model.setRowCount(0); // clear
+        for (Student s : list) {
+            model.addRow(new Object[]{s.getMasv(), s.getHoten(), s.getTuoi(), s.getSdt()});
+        }
+    }
+
     private void loadStudents() {
         try {
-            Response res = ClientApp.sendRequest(new Request("GET_ALL", null));
-            List<Student> list = (List<Student>) res.getData();
-
-            model.setRowCount(0); // clear
-            for (Student s : list) {
-                model.addRow(new Object[]{s.getMasv(), s.getHoten(), s.getTuoi(), s.getSdt()});
-            }
+            clientApp.sendRequest(new Request("GET_ALL", null));
+            // server sẽ trả về list qua listener → tự gọi updateTable()
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, "Lỗi load DS: " + ex.getMessage());
         }
@@ -70,7 +89,7 @@ public class ClientUI extends JFrame {
         JTextField tfTuoi = new JTextField();
         JTextField tfSdt = new JTextField();
 
-        Object[] msg = { "Họ tên:", tfTen, "Tuổi:", tfTuoi, "SĐT:", tfSdt};
+        Object[] msg = {"Họ tên:", tfTen, "Tuổi:", tfTuoi, "SĐT:", tfSdt};
         int opt = JOptionPane.showConfirmDialog(this, msg, "Thêm sinh viên", JOptionPane.OK_CANCEL_OPTION);
 
         if (opt == JOptionPane.OK_OPTION) {
@@ -80,9 +99,7 @@ public class ClientUI extends JFrame {
                         Integer.parseInt(tfTuoi.getText()),
                         tfSdt.getText()
                 );
-                Response res = ClientApp.sendRequest(new Request("ADD", s));
-                JOptionPane.showMessageDialog(this, res.getMessage());
-                loadStudents();
+                clientApp.sendRequest(new Request("ADD", s));
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, "Lỗi thêm: " + ex.getMessage());
             }
@@ -110,15 +127,8 @@ public class ClientUI extends JFrame {
 
         if (opt == JOptionPane.OK_OPTION) {
             try {
-                Student s = new Student(
-                        masv,
-                        tfTen.getText(),
-                        Integer.parseInt(tfTuoi.getText()),
-                        tfSdt.getText()
-                );
-                Response res = ClientApp.sendRequest(new Request("UPDATE", s));
-                JOptionPane.showMessageDialog(this, res.getMessage());
-                loadStudents();
+                Student s = new Student(masv, tfTen.getText(), Integer.parseInt(tfTuoi.getText()), tfSdt.getText());
+                clientApp.sendRequest(new Request("UPDATE", s));
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, "Lỗi sửa: " + ex.getMessage());
             }
@@ -136,9 +146,7 @@ public class ClientUI extends JFrame {
         int confirm = JOptionPane.showConfirmDialog(this, "Bạn có chắc muốn xóa SV mã " + masv + " ?", "Xác nhận", JOptionPane.YES_NO_OPTION);
         if (confirm == JOptionPane.YES_OPTION) {
             try {
-                Response res = ClientApp.sendRequest(new Request("DELETE", masv));
-                JOptionPane.showMessageDialog(this, res.getMessage());
-                loadStudents();
+                clientApp.sendRequest(new Request("DELETE", masv));
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, "Lỗi xóa: " + ex.getMessage());
             }
