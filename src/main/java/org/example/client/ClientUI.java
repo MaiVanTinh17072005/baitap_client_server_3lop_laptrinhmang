@@ -26,13 +26,11 @@ public class ClientUI extends JFrame {
         JScrollPane scrollPane = new JScrollPane(table);
 
         // ======= Buttons =======
-        JButton btnLoad = new JButton("Load DS");
         JButton btnAdd = new JButton("Thêm");
         JButton btnUpdate = new JButton("Sửa");
         JButton btnDelete = new JButton("Xóa");
 
         JPanel panelBtn = new JPanel();
-        panelBtn.add(btnLoad);
         panelBtn.add(btnAdd);
         panelBtn.add(btnUpdate);
         panelBtn.add(btnDelete);
@@ -59,7 +57,6 @@ public class ClientUI extends JFrame {
         }
 
         // ======= Event =======
-        btnLoad.addActionListener(e -> loadStudents());
         btnAdd.addActionListener(e -> addStudent());
         btnUpdate.addActionListener(e -> updateStudent());
         btnDelete.addActionListener(e -> deleteStudent());
